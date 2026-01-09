@@ -1,0 +1,80 @@
+# Test Requests para Contact API
+
+## Health Check
+GET https://localhost:53903/health
+
+###
+
+## Contact Form - Spanish
+POST https://localhost:53903/api/contact
+Content-Type: application/json
+
+{
+  "name": "María González",
+  "email": "jhorsg@gmail.com",
+  "subject": "Consulta sobre servicios de traducción",
+  "message": "Hola, me gustaría obtener más información sobre sus servicios de traducción legal. Tengo varios documentos que necesito traducir del español al inglés para un proceso de inmigración.",
+  "language": "es"
+}
+
+###
+
+## Contact Form - English
+POST https://localhost:53903/api/contact
+Content-Type: application/json
+
+{
+  "name": "John Smith",
+  "email": "john@example.com",
+  "subject": "Translation services inquiry",
+  "message": "Hello, I would like to get more information about your commercial translation services. I need to translate marketing materials from English to Spanish for our Latin American market.",
+  "language": "en"
+}
+
+###
+
+## Contact Form - French
+POST https://localhost:53903/api/contact
+Content-Type: application/json
+
+{
+  "name": "Pierre Dubois",
+  "email": "pierre@example.com",
+  "subject": "Demande de traduction technique",
+  "message": "Bonjour, j'ai besoin de traduire des manuels techniques du français vers l'anglais. Pourriez-vous me fournir un devis?",
+  "language": "fr"
+}
+
+###
+
+## Validation Error - Missing required fields
+POST https://localhost:53903/api/contact
+Content-Type: application/json
+
+{
+  "name": "",
+  "email": "invalid-email",
+  "subject": "Hi",
+  "message": "Short"
+}
+
+###
+
+## Validation Error - Invalid email
+POST https://localhost:53903/api/contact
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "not-an-email",
+  "subject": "Test Subject",
+  "message": "This is a test message with at least 10 characters",
+  "language": "en"
+}
+
+###
+
+## Contact Controller Health Check
+GET https://localhost:53903/api/contact/health
+
+###
