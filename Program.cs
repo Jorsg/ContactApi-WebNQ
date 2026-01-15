@@ -19,17 +19,24 @@ builder.Services.AddValidatorsFromAssemblyContaining<ContactRequestValidator>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Configure CORS - IMPORTANT: Update with your actual domain
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() 
-    ?? new[] { "http://localhost:3000", "https://tusitio.com", "https://www.tusitio.com" };
+var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
+    ?? new[] {
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "http://localhost:8080",
+        "https://nataliaquintero.ca"
+    };
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowWebsite", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        //policy.WithOrigins(allowedOrigins)
+        policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
+              .AllowAnyHeader();
+        //.SetIsOriginAllowed(origin => true)
+        //.AllowCredentials();
     });
 });
 
@@ -48,19 +55,9 @@ if (app.Environment.IsDevelopment())
 }
 
 // Use HTTPS redirection
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 // Use CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowWebsite", policy =>
-    {
-        policy.WithOrigins("http://localhots:3000", "https://nataliaquintero.ca")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
-    });
-});
 app.UseCors("AllowWebsite");
 
 // Use authorization
