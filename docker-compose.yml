@@ -1,0 +1,35 @@
+services:
+  contactapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: natalia-quintero-api
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - EmailSettings__Provider=smtp
+      - EmailSettings__FromEmail=${EMAIL_FROM:-infotraduxai@gmail.com}
+      - EmailSettings__FromName=${EMAIL_FROM_NAME:-Natalia Quintero Website}
+      - EmailSettings__ToEmail=${EMAIL_TO:-infotraduxai@gmail.com}
+      - EmailSettings__ToName=${EMAIL_TO_NAME:-Natalia Quintero}
+      - EmailSettings__Smtp__Host=${SMTP_HOST:-smtp.gmail.com}
+      - EmailSettings__Smtp__Port=${SMTP_PORT:-587}
+      - EmailSettings__Smtp__Username=${SMTP_USERNAME}
+      - EmailSettings__Smtp__Password=${SMTP_PASSWORD}
+      - EmailSettings__Smtp__EnableSsl=${SMTP_ENABLE_SSL:-true}
+      - EmailSettings__SendGrid__ApiKey=${SENDGRID_API_KEY}
+    restart: unless-stopped
+    networks:
+      - contactapi-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+networks:
+  contactapi-network:
+    driver: bridge
