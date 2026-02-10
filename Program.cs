@@ -24,7 +24,8 @@ var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<stri
         "http://127.0.0.1:5500",
         "http://localhost:5500",
         "http://localhost:8080",
-        "https://nataliaquintero.ca"
+        "https://nataliaquintero.ca",
+        "http://nataliaquintero.ca"
     };
 
 builder.Services.AddCors(options =>
