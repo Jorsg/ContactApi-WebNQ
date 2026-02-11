@@ -1,8 +1,6 @@
 services:
   contactapi:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: nqdevops/nq-contact-api:latest
     container_name: natalia-quintero-api
     ports:
       - "5000:8080"
