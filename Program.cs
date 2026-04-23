@@ -20,25 +20,29 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 
 // Configure CORS - IMPORTANT: Update with your actual domain
 var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-    ?? new[] {
-        "http://127.0.0.1:5500",
-        "http://localhost:5500",
-        "http://localhost:8080",
-        "https://nataliaquintero.ca",
-        "http://nataliaquintero.ca"
-    };
-
+	?? new[] {
+		"http://127.0.0.1:5500",
+		"http://localhost:5500",
+		"http://localhost:8080",
+		"https://nataliaquintero.ca",
+		"https://www.nataliaquintero.ca",
+		"http://nataliaquintero.ca",
+		"http://www.nataliaquintero.ca"
+	};
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowWebsite", policy =>
-    {
-        //policy.WithOrigins(allowedOrigins)
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-        //.SetIsOriginAllowed(origin => true)
-        //.AllowCredentials();
-    });
+	options.AddPolicy("AllowWebsite", policy =>
+	{
+		policy.WithOrigins(
+				"http://127.0.0.1:5500",
+				"http://localhost:5500",
+				"https://nataliaquintero.ca",
+				"https://www.nataliaquintero.ca"
+			)
+			.AllowAnyMethod()
+			.AllowAnyHeader()
+			.AllowCredentials(); // Enable if you need to send cookies/auth headers
+	});
 });
 
 // Configure logging
