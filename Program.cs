@@ -3,13 +3,48 @@ using NataliaQuintero.ContactApi.Services;
 using NataliaQuintero.ContactApi.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Explicitly configure configuration sources to load environment variables
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
 // Add services to the container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+	options.SwaggerDoc("v1", new OpenApiInfo
+	{
+		Title = "Natalia Quintero - Contact API",
+		Version = "v1",
+		Description = "API para envío de contactos - Contact form backend",
+		Contact = new OpenApiContact
+		{
+			Name = "Natalia Quintero",
+			Email = "noreply@example.com",
+			Url = new Uri("https://nataliaquintero.ca")
+		}
+	});
+
+	// Include XML comments if the project is configured to generate them
+	try
+	{
+		var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+		var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+		if (File.Exists(xmlPath))
+		{
+			options.IncludeXmlComments(xmlPath);
+		}
+	}
+	catch { /* ignore if reflection/path fails */ }
+});
 
 // Add FluentValidation
 builder.Services.AddFluentValidationAutoValidation();
@@ -33,7 +68,8 @@ builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowWebsite", policy =>
 	{
-		policy.WithOrigins(
+		policy
+			.WithOrigins(
 				"http://127.0.0.1:5500",
 				"http://localhost:5500",
 				"https://nataliaquintero.ca",
@@ -41,7 +77,8 @@ builder.Services.AddCors(options =>
 			)
 			.AllowAnyMethod()
 			.AllowAnyHeader()
-			.AllowCredentials(); // Enable if you need to send cookies/auth headers
+			.AllowCredentials()
+			.WithExposedHeaders("Content-Disposition"); // Expose any custom headers if needed
 	});
 });
 
@@ -53,14 +90,17 @@ builder.Logging.AddDebug();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-// Enable Swagger in all environments
-app.UseSwagger();
-app.UseSwaggerUI();
+// Enable Swagger only in Development
+if (app.Environment.IsDevelopment())
+{
+	app.UseSwagger();
+	app.UseSwaggerUI();
+}
 
 // Use HTTPS redirection
 //app.UseHttpsRedirection();
 
-// Use CORS
+// Use CORS - MUST be before UseAuthorization
 app.UseCors("AllowWebsite");
 
 // Use authorization

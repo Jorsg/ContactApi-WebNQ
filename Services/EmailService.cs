@@ -97,6 +97,10 @@ public class EmailService : IEmailService
         var smtpPassword = _configuration["EmailSettings:Smtp:Password"];
         var enableSsl = bool.Parse(_configuration["EmailSettings:Smtp:EnableSsl"] ?? "true");
 
+        // DEBUG LOGS
+        _logger.LogInformation("SMTP DEBUG - Host: {Host}, Username: {Username}, Password Length: {PasswordLength}, EnableSsl: {EnableSsl}", 
+            smtpHost ?? "NULL", smtpUsername ?? "NULL", smtpPassword?.Length ?? 0, enableSsl);
+
         if (string.IsNullOrEmpty(smtpHost) || string.IsNullOrEmpty(smtpUsername) || string.IsNullOrEmpty(smtpPassword))
         {
             throw new InvalidOperationException("SMTP settings are not properly configured");
@@ -109,10 +113,11 @@ public class EmailService : IEmailService
         using var smtpClient = new SmtpClient(smtpHost, smtpPort)
         {
             Credentials = new NetworkCredential(smtpUsername, smtpPassword),
-            EnableSsl = enableSsl
+            EnableSsl = enableSsl,
+            Timeout = 10000  // 10 seconds timeout
         };
 
-        var mailMessage = new MailMessage
+        using var mailMessage = new MailMessage
         {
             From = new MailAddress(fromEmail, fromName),
             Subject = $"[Website Contact] {request.Subject}",
@@ -122,17 +127,18 @@ public class EmailService : IEmailService
 
         mailMessage.To.Add(new MailAddress(toEmail));
         mailMessage.ReplyToList.Add(new MailAddress(request.Email, request.Name));
+
         try
         {
             await smtpClient.SendMailAsync(mailMessage);
+            _logger.LogInformation("Email sent successfully via SMTP to {ToEmail}", toEmail);
+            return true;
         }
         catch (Exception ex)
         {
-            _ = ex.StackTrace;
-        }       
-        
-        _logger.LogInformation("Email sent successfully via SMTP to {ToEmail}", toEmail);
-        return true;
+            _logger.LogError(ex, "Failed to send email via SMTP to {ToEmail}. Error: {ErrorMessage}", toEmail, ex.Message);
+            throw;  // Relanza la excepción para que se maneje en SendContactEmailAsync
+        }
     }
 
     private string GenerateHtmlEmail(ContactRequest request)
